@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+
+
+<head>
+    <meta charset="UTF-8">
+<!-- image picker -->
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+<script type="text/javascript" src="{% static 'image-picker/image-picker.js' %}"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'image-picker/image-picker.css' %}">
+<style type="text/css">.thumbnails li img {width: 180px;} </style>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="{% static 'bootstrap/3.3.6/css/bootstrap.min.css' %}">
+<link rel="stylesheet" href="{% static 'bootstrap/3.3.6/css/bootstrap-theme.min.css' %}">
+<script src="{% static 'bootstrap/3.3.6/js/bootstrap.min.js' %}"></script>
+<link rel="stylesheet" href="{% static 'ymenubar.css' %}">
+
+    <title>Upload your picture</title>
+</head>
+<body>
+
+<!-- menu bar -->
+
+<ul class="ymenubar">
+  <li><a class="active" href="{% url 'app1:home' %}">Home</a></li>
+  <li><a href="{% url 'app1:gallery' %}">Gallery</a></li>
+  <li><a href="{% url 'app1:tag_list' %}">Tag list</a></li>
+  <li><a href="{% url 'app1:upload' %}" >Upload</a></li>
+  <li><a href="#This">Picture</a></li>
+</ul>
+
+<!-- contents body -->
+<p>
+
+</p>
+<div class="container">
+    <input type="text" id="q" />
+    <input type="button" value="Search" class="btn btn-success btn-search" />
+</div>
+
+<p>
+
+</p>
+
+
+<!-- pictures --->
+
+<div class="container">
+    <div class="picker">
+        <select class="pk show-html">
+            {% for p in pictures %}
+                <option data-img-src="{{ p.url }}" value="{{ forloop.counter }}" page="{% url 'app1:picture' p.id %}"> {{ forloop.counter }} </option>
+            {% endfor %}
+        </select>
+    </div>
+    {% if pictures|length == 0 %}
+        <h4> </h4>
+        <div class="alert alert-warning">
+            not match.
+        </div>
+    {% endif %}
+</div>
+
+</body>
+
+<script type="text/javascript">
+    $("select.pk").imagepicker({hide_select: true,
+    clicked: function() {
+        var a = $(this).find("option[value='" + $(this).val() + "']");
+        window.location = a.attr('page');
+    }});
+
+    $("input.btn-search").click(function() {
+        var org = $("#q").val();
+        var s1 = org.split(" ");
+        window.location = "{% url 'app1:search_result' %}" + "?q=" + s1;
+    });
+
+    $("#q").autocomplete({
+        source: "{% url 'app1:api_get_picture_tags_with_term' %}",
+        multiple: true,
+        multipleSeparator: " ",
+        select: function(e, ui) {return false;}, // disabling default impl.
+        focus: function(e, ui) {
+            var t = this.value.split(' ');
+            t.pop();
+            t.push(ui.item.value);
+            this.value = t.join(' ');
+            return false;
+        },
+    });
+
+    $("#q").keyup(function(e) {
+        if (e.keyCode == 13) {
+            $("input.btn-search").click();
+        }
+    });
+    $("#q").focus().val("").val("{{ query_text }}");
+</script>
+
+</html>

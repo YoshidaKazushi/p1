@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+
+{% load static %}
+<html lang="en">
+
+
+<head>
+<meta charset="UTF-8">
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+<script type="text/javascript" src="{% static 'image-picker/image-picker.js' %}"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'image-picker/image-picker.css' %}">
+<style type="text/css">.thumbnails li img {width: 180px;} </style>
+
+<link rel="stylesheet" href="{% static 'bootstrap/3.3.6/css/bootstrap.min.css' %}">
+<link rel="stylesheet" href="{% static 'bootstrap/3.3.6/css/bootstrap-theme.min.css' %}">
+<script src="{% static 'bootstrap/3.3.6/js/bootstrap.min.js' %}"></script>
+
+
+<link rel="stylesheet" href="{% static 'ymenubar.css' %}">
+
+    <meta charset="UTF-8">
+    <title>Recent uploaded</title>
+
+</head>
+
+
+<body>
+<!-- menu bar -->
+
+<ul class="ymenubar">
+  <li><a href="{% url 'app1:home' %}">Home</a></li>
+  <li><a class="active" href="{% url 'app1:gallery' %}">Gallery</a></li>
+  <li><a href="{% url 'app1:tag_list' %}">Tag list</a></li>
+  <li><a href="{% url 'app1:upload' %}" >Upload</a></li>
+  <li><a href="#This">Picture</a></li>
+</ul>
+
+<!-- contents boady -->
+<div class="container">
+    <h2> Recent uploaded images </h2>
+    <div class="picker">
+        <select class="pk show-html">
+            {% if pictures %}
+                {% for obj in pictures %}
+                    <option data-img-src="{{ obj.pict.url }}" value="{{ forloop.counter }}" page="{% url 'app1:picture' obj.id %}"> {{ forloop.counter }} </option>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </select>
+    </div>
+</div>
+</body>
+<script type="text/javascript">
+    $("select.pk").imagepicker({hide_select: true,
+    clicked: function() {
+        var a = $(this).find("option[value='" + $(this).val() + "']");
+        window.location = a.attr('page');
+    }});
+</script>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+{% load static %}
+<html lang="en">
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+<link rel="stylesheet" href="{% static 'bootstrap/3.3.6/css/bootstrap.min.css' %}">
+<link rel="stylesheet" href="{% static 'bootstrap/3.3.6/css/bootstrap-theme.min.css' %}">
+<script src="{% static 'bootstrap/3.3.6/js/bootstrap.min.js' %}"></script>
+
+<link rel="stylesheet" href="{% static 'ymenubar.css' %}">
+
+<style type="text/css">
+    .ui-droppable-hover {
+        border: 1px;
+        border-color: grey;
+        border-style: solid;
+    }
+    .trash-image {
+        margin-left: 80px;
+        display:inline-block;
+        width:32px;
+        height:32px;
+        background-image: url('{% static 'trash-icon.png' %}');
+    }
+</style>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Picture</title>
+</head>
+<body>
+
+<!-- menu bar -->
+
+<ul class="ymenubar">
+  <li><a href="{% url 'app1:home' %}">Home</a></li>
+  <li><a href="{% url 'app1:gallery' %}">Gallery</a></li>
+  <li><a href="{% url 'app1:tag_list' %}">Tag list</a></li>
+  <li><a href="{% url 'app1:upload' %}" >Upload</a></li>
+  <li><a class="active" href="#This">Picture</a></li>
+</ul>
+
+<!-- contents body -->
+
+<div class="container">
+
+    <center>
+        <h2>{{ picture.pict.name }} </h2>
+
+        <img src="{{ picture.pict.url}}" style="max-width: 480px;" />
+        <p></p>
+    </center>
+
+
+    <table class="table">
+        <tr>
+            <td>Uploaded date : </td><td align="left">{{ picture.upload_date }}</td>
+        </tr>
+        <tr>
+            <td>Tags :</td>
+            <td class="tag_btn_place"></td>
+        </tr>
+        <tr>
+            <td>Add new tags :</td>
+            <td><input type="text" class="new_tag_text"/><input class="new_tag_btn btn-success btn-sm" type="button" value="Add"/></td>
+        </tr>
+        <tr>
+        </tr>
+    </table>
+
+    <div id="remove_tag_dialog" title="Info:">
+        Do you want to remove the tag from this picture?<br>
+        <h4><div id="remove_tag_dialog_text"></div></h4>
+    </div>
+</div>
+
+<script type="text/javascript">
+    // Throw the ajax request to get all tag associated with this page 'picture' id
+    // picture.id comes from the server thru the django template
+    function picture_html_update_tag_btn() {
+        tag_btn_place = $("td.tag_btn_place");
+        $('div').remove(".badge");
+        $('div').remove(".trash-image");
+        $('div').remove(".noavailable");
+
+        // $.now() is to avoid browser caching the request... (e.g. MS Edge)
+        $.get('{% url 'app1:api_get_picture_tags' %}', {picture_id:{{ picture.id }}, "_": $.now() }, function(data) {
+            obj = $.parseJSON(data);
+            for (i = 0; i < obj.length; i++) {
+                obj_input_text = "<div style='margin-right:4px' class='badge btn'>" + obj[i].fields.text + "</div>"
+                a = $(obj_input_text).appendTo(tag_btn_place).hide().fadeIn(800);
+//                a = $(obj_input_text).appendTo(tag_btn_place);
+                a.data('tag_id', obj[i].pk);
+                a.click(function() {
+                    if ($(this).hasClass('noclick')) {
+                        $(this).removeClass('noclick');
+                    } else {
+                        window.location = "{% url 'app1:search_result' %}"+ "?q=" + $(this).html();
+                    }
+                });
+                a.draggable( {distance:10, revert:true, cursor: 'move',
+                    start: function(e,u){$(this).addClass('noclick');}
+                });
+            }
+
+            // Let's show text if no tag is available..
+            if (obj.length <= 0) {
+                obj_no_available = "<div class='noavailable'> not available</div>";
+                $(obj_no_available).appendTo(tag_btn_place).fadeIn(8000);
+            }
+            // otherwise, show trash icon to let user remove tas
+            else {
+                obj_trash = "<div class='trash-image'></div>";
+                $(obj_trash).appendTo(tag_btn_place).droppable( {
+                    drop: function(e,u) {
+//                        alert('draggable tag_id =' + u.draggable.data('tag_id') + ':' + u.draggable.html());
+                        $("#remove_tag_dialog_text").html("'" + u.draggable.html() + "'");
+                        $("#remove_tag_dialog").data('draggable', u.draggable).dialog("open");
+                    }
+                } );
+                $(obj_trash).tooltip( {
+                    content: "Drag and drop the tag here to remove it from the picture"
+                });
+            }
+
+            $("input.new_tag_text").val("").focus();
+        });
+    }
+
+    // update 'tag' badges as page initialing process
+    $(document).ready(function() {
+        picture_html_update_tag_btn();
+    });
+
+    // when user clicks on the add new tags button, this function is called
+    // it makes request to the server to add new tags which is typed in text box to the associated picture object
+    $("input.new_tag_btn").click(function() {
+        tag_text = $('input.new_tag_text').val();
+        if (tag_text == "") return;
+
+        $.get('{% url 'app1:api_update_picture_tags' %}', {picture_id:{{ picture.id }}, tags:tag_text}, function(data) {
+            if (data == 1)
+                window.setTimeout(function() {picture_html_update_tag_btn();}, 10);
+            else
+                alert('can not connect to the server or internal error occurred.');
+        });
+    });
+
+    // when user press 'Enter' key on the keyboard, this function is called with keyCode==13
+    // it should be equivalent to the button click()
+    $("input.new_tag_text").keyup(function(e) {
+        if (e.keyCode == 13) {
+            $("input.new_tag_btn").click();
+        }
+    });
+
+    // autocomplete function for tags
+    // it would help user input the tag which is already stored in db.
+    $("input.new_tag_text").autocomplete({
+        source: "{% url 'app1:api_get_picture_tags_with_term_1' %}",
+    });
+
+    // remove tag
+    $("#remove_tag_dialog").dialog({ autoOpen: false, modal: true,
+        buttons: {
+            Yes: function() {
+                var tag_id_to_remove = $(this).data('draggable').data('tag_id');
+                $.get('{% url 'app1:api_remove_tag_from_picture' %}', {picture_id:{{ picture.id }}, tag_id: tag_id_to_remove },
+                    function(data) {
+                        picture_html_update_tag_btn();
+                    }
+                );
+
+                // finally, dialog will be going to close!
+                $(this).dialog("close");
+            },
+            No: function() { $(this).dialog("close");}
+        }
+    });
+
+    // the 'Add new tags' input wants to get the focus as page initial stage...
+    $("input.new_tag_text").focus();
+</script>
+
+</body>
+
+</html>

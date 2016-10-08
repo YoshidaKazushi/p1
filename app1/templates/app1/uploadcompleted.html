@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload complete</title>
+</head>
+<body>
+      {% if saved %}
+         <strong>Your picture was saved.</strong>
+         <a href="{% url 'app1:gallery' %}">gallery</a>
+      {% endif %}
+
+      {% if not saved %}
+         <strong>Your picture was not saved.</strong>
+      {% endif %}
+</body>
+</html>

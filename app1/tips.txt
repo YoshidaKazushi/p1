@@ -1,0 +1,33 @@
+
+$ python --version
+Python 3.5.2+
+
+>>> import django
+>>> django.get_version()
+'1.10.1'
+
+$ python manage.py version
+1.10.1
+
+
+* JQuery autocomplete with Django
+- http://flaviusim.com/blog/AJAX-Autocomplete-Search-with-Django-and-jQuery/
+
+* multiple autocomplete for JQuery
+- https://gist.github.com/jaimeiniesta/1142315
+- http://stackoverflow.com/questions/8488371/jquery-autocomplete-without-terminating-at-whitespace
+
+* how to check Django models in shell
+- https://docs.djangoproject.com/en/1.10/intro/tutorial02/
+
+>>> import django
+>>> django.setup()
+>>> from app1.models import Picture, PictureTag
+>>> Picture.objects.get(pk=80)
+
+* drag and drop with JQuery: Your essential guide
+- http://www.elated.com/articles/drag-and-drop-with-jquery-your-essential-guide/
+
+* Django models - many to many relationship
+- https://docs.djangoproject.com/en/1.10/topics/db/examples/many_to_many/
+

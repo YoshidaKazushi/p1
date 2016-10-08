@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+
+{% load static %}
+<html lang="en">
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+<link rel="stylesheet" href="{% static 'bootstrap/3.3.6/css/bootstrap.min.css' %}">
+<link rel="stylesheet" href="{% static 'bootstrap/3.3.6/css/bootstrap-theme.min.css' %}">
+<script src="{% static 'bootstrap/3.3.6/js/bootstrap.min.js' %}"></script>
+
+<link rel="stylesheet" href="{% static 'ymenubar.css' %}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Picture tag list</title>
+</head>
+<body>
+
+<!-- menu bar -->
+
+<ul class="ymenubar">
+  <li><a href="{% url 'app1:home' %}">Home</a></li>
+  <li><a href="{% url 'app1:gallery' %}">Gallery</a></li>
+  <li><a class="active" href="{% url 'app1:tag_list' %}">Tag list</a></li>
+  <li><a href="{% url 'app1:upload' %}" >Upload</a></li>
+  <li><a href="#This">Picture</a></li>
+</ul>
+
+<!-- contents body -->
+<div class="container">
+    <h2> 'tag' associated with pictures</h2>
+
+    <table class="table table-striped">
+        {% for t in tags %}
+        <tr>
+            <td><div class='badge btn'>{{ t.text }}</div></td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+
+</body>
+
+<script type="text/javascript">
+    $('div.badge').click(function() {
+        window.location = "{% url 'app1:search_result' %}"+ "?q=" + $(this).html();
+    });
+</script>
+
+</html>
